@@ -1,0 +1,53 @@
+@import "tailwindcss";
+
+@theme {
+  --default-font-family: 'P22 Mackinac', Georgia, serif;
+}
+
+/**
+ * @license
+ * MyFonts Webfont Build ID 3867246, 2020-12-16T11:57:38-0500
+ * 
+ * The fonts listed in this notice are subject to the End User License
+ * Agreement(s) entered into by the website owner. All other parties are 
+ * explicitly restricted from using the Licensed Webfonts(s).
+ * 
+ * You may obtain a valid license at the URLs below.
+ * 
+ * Webfont: P22 Mackinac Pro Bold by IHOF
+ * URL: https://www.myfonts.com/collections/ihof-foundry
+
+ * Webfont: P22 Mackinac Pro Book Italic by IHOF
+ * URL: https://www.myfonts.com/collections/ihof-foundry
+
+ * Webfont: P22 Mackinac Pro Book by IHOF
+ * URL: https://www.myfonts.com/collections/ihof-foundry
+ 
+ * © 2025 MyFonts Inc. */
+
+@font-face {
+  font-family: 'P22 Mackinac';
+  src:
+    url('/ffxiv-bingo/fonts/P22MackinacProBook/font.woff2') format('woff2'),
+    url('/ffxiv-bingo/fonts/P22MackinacProBook/font.woff') format('woff');
+}
+
+@font-face {
+  font-family: 'P22 Mackinac';
+  font-style: italic;
+  src:
+    url('/ffxiv-bingo/fonts/P22MackinacProBookItalic/font.woff2') format('woff2'),
+    url('/ffxiv-bingo/fonts/P22MackinacProBookItalic/font.woff') format('woff');
+}
+
+@font-face {
+  font-family: 'P22 Mackinac';
+  font-weight: bold;
+  src:
+    url('/ffxiv-bingo/fonts/P22MackinacProBold/font.woff2') format('woff2'),
+    url('/ffxiv-bingo/fonts/P22MackinacProBold/font.woff') format('woff');
+}
+
+html {
+  font-size: 16pt;
+}
