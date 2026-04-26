@@ -1,33 +1,87 @@
 ---
 import Layout from '../layouts/layout.astro';
 import { getEntry } from 'astro:content';
+const allSquares = (await getEntry('cards', 'ffxiv'))?.data.squares ?? [];
 const numSquares = 16;
-const allSquares = (await getEntry('cards', 'ffxiv'))?.data.squares;
-const todaySquares: string[] = [];
-while (allSquares?.length && todaySquares.length < numSquares) {
-  todaySquares.push(...allSquares);
-}
-if (todaySquares.length > numSquares) {
-  todaySquares.splice(numSquares);
-}
-for (let i = todaySquares.length - 1; i > 0; i--) {
-  const j = Math.floor(Math.random() * (i + 1));
-  [todaySquares[i], todaySquares[j]] = [todaySquares[j], todaySquares[i]];
-}
 ---
 
 <Layout title='ffxiv bingo' description='ffxiv bingo'>
   <div class='flex justify-center'>
     <div class='max-w-2xl min-w-md mx-3'>
-      <div class='grid grid-cols-4 gap-2 bg-white rounded p-3'>
-        {
-          todaySquares.map((x) => (
-            <div onclick='this.classList.toggle("checked")' class='p-1 border rounded border-black text-black aspect-square text-center place-content-center'>
-              {x}
-            </div>
-          ))
-        }
+      <div id='bingo-grid' class='grid grid-cols-4 gap-2 bg-white rounded p-3'></div>
+      <div class='flex justify-center mt-5'>
+        <button id='bingo-reset' class='px-3 py-1 text-lg rounded bg-cyan-950'> reset </button>
       </div>
     </div>
   </div>
 </Layout>
+
+<script is:inline define:vars={{ allSquares, numSquares }}>
+  const STORAGE_KEY = 'bingo:ffxiv';
+  const CELL_CLASS = 'p-1 border rounded border-black text-black aspect-square text-center place-content-center';
+
+  function shuffle(source, n) {
+    const filled = [];
+    while (source.length && filled.length < n) filled.push(...source);
+    filled.splice(n);
+    for (let i = filled.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [filled[i], filled[j]] = [filled[j], filled[i]];
+    }
+    return filled;
+  }
+
+  function loadState() {
+    try {
+      const raw = localStorage.getItem(STORAGE_KEY);
+      if (!raw) return null;
+      const parsed = JSON.parse(raw);
+      if (!Array.isArray(parsed?.squares) || !Array.isArray(parsed?.checked)) return null;
+      return parsed;
+    } catch {
+      return null;
+    }
+  }
+
+  function saveState(state) {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+  }
+
+  function freshState() {
+    return { squares: shuffle(allSquares, numSquares), checked: [] };
+  }
+
+  function render(state) {
+    const grid = document.getElementById('bingo-grid');
+    grid.replaceChildren();
+    state.squares.forEach((text, i) => {
+      const cell = document.createElement('div');
+      cell.className = CELL_CLASS;
+      if (state.checked.includes(i)) cell.classList.add('checked');
+      cell.textContent = text;
+      cell.addEventListener('click', () => {
+        cell.classList.toggle('checked');
+        const idx = state.checked.indexOf(i);
+        if (idx === -1) state.checked.push(i);
+        else state.checked.splice(idx, 1);
+        saveState(state);
+      });
+      grid.appendChild(cell);
+    });
+  }
+
+  let state = loadState();
+  if (!state) {
+    state = freshState();
+    saveState(state);
+  }
+  render(state);
+
+  document.getElementById('bingo-reset').addEventListener('click', () => {
+    if (confirm('reset?')) {
+      state = freshState();
+      saveState(state);
+      render(state);
+    }
+  });
+</script>
