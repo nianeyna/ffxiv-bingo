@@ -1,7 +1,33 @@
 ---
 import Layout from '../layouts/layout.astro';
+import { getEntry } from 'astro:content';
+const numSquares = 16;
+const allSquares = (await getEntry('cards', 'ffxiv'))?.data.squares;
+const todaySquares: string[] = [];
+while (allSquares?.length && todaySquares.length < numSquares) {
+  todaySquares.push(...allSquares);
+}
+if (todaySquares.length > numSquares) {
+  todaySquares.splice(numSquares);
+}
+for (let i = todaySquares.length - 1; i > 0; i--) {
+  const j = Math.floor(Math.random() * (i + 1));
+  [todaySquares[i], todaySquares[j]] = [todaySquares[j], todaySquares[i]];
+}
 ---
 
 <Layout title='ffxiv bingo' description='ffxiv bingo'>
-	
+  <div class='flex justify-center'>
+    <div class='max-w-2xl min-w-md mx-3'>
+      <div class='grid grid-cols-4 gap-2 bg-white rounded p-3'>
+        {
+          todaySquares.map((x) => (
+            <div onclick='this.classList.toggle("checked")' class='p-1 border rounded border-black text-black aspect-square text-center place-content-center'>
+              {x}
+            </div>
+          ))
+        }
+      </div>
+    </div>
+  </div>
 </Layout>
