@@ -10,7 +10,7 @@ const numSquares = 16;
     <div class='max-w-2xl min-w-md mx-3'>
       <div id='bingo-grid' class='grid grid-cols-4 gap-2 bg-white rounded p-3'></div>
       <div class='flex justify-center mt-5'>
-        <button id='bingo-reset' class='px-3 py-1 text-lg rounded bg-cyan-950'> reset </button>
+        <button id='bingo-reset' class='px-3 py-1 text-lg rounded bg-cyan-950'>reset</button>
       </div>
     </div>
   </div>
@@ -18,17 +18,24 @@ const numSquares = 16;
 
 <script is:inline define:vars={{ allSquares, numSquares }}>
   const STORAGE_KEY = 'bingo:ffxiv';
-  const CELL_CLASS = 'p-1 border rounded border-black text-black aspect-square text-center place-content-center';
+  const CELL_CLASS = 'p-1 border rounded border-black text-black aspect-square text-center place-content-center cursor-pointer';
 
-  function shuffle(source, n) {
+  function randomizeSquares(source, n) {
     const filled = [];
-    while (source.length && filled.length < n) filled.push(...source);
-    filled.splice(n);
-    for (let i = filled.length - 1; i > 0; i--) {
-      const j = Math.floor(Math.random() * (i + 1));
-      [filled[i], filled[j]] = [filled[j], filled[i]];
+    while (source.length && filled.length < n) {
+      filled.push(...shuffle([...source]));
     }
+    filled.splice(n);
+    shuffle(filled);
     return filled;
+  }
+
+  function shuffle(array) {
+    for (let i = array.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [array[i], array[j]] = [array[j], array[i]];
+    }
+    return array;
   }
 
   function loadState() {
@@ -48,22 +55,27 @@ const numSquares = 16;
   }
 
   function freshState() {
-    return { squares: shuffle(allSquares, numSquares), checked: [] };
+    return { squares: randomizeSquares(allSquares, numSquares), checked: [] };
   }
 
   function render(state) {
     const grid = document.getElementById('bingo-grid');
     grid.replaceChildren();
     state.squares.forEach((text, i) => {
-      const cell = document.createElement('div');
+      const cell = document.createElement('button');
+      cell.type = 'button';
       cell.className = CELL_CLASS;
       if (state.checked.includes(i)) cell.classList.add('checked');
       cell.textContent = text;
       cell.addEventListener('click', () => {
-        cell.classList.toggle('checked');
-        const idx = state.checked.indexOf(i);
-        if (idx === -1) state.checked.push(i);
-        else state.checked.splice(idx, 1);
+        const willCheck = !cell.classList.contains('checked');
+        [...grid.children].forEach((node, j) => {
+          if (node.textContent !== cell.textContent) return;
+          node.classList.toggle('checked', willCheck);
+          const idx = state.checked.indexOf(j);
+          if (willCheck && idx === -1) state.checked.push(j);
+          else if (!willCheck && idx !== -1) state.checked.splice(idx, 1);
+        });
         saveState(state);
       });
       grid.appendChild(cell);
